@@ -1,5 +1,5 @@
 # ble-indoor-localization-study
-# Risk-Aware Evacuation under Localization Uncertainty
+# Risk-Aware Evacuation Planning under Localization Uncertainty
 
 ## Motivation
 In emergency evacuation, inaccurate localization can be more dangerous than delayed guidance.
@@ -28,4 +28,4 @@ How can an evacuation system plan safe routes when user location is uncertain?
 - Safety-critical system design
 
 ## Status
-Conceptual system design & research framing
+Conceptual system architecture and problem formulation based on real-world localization failures.
