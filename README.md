@@ -1,153 +1,258 @@
 # Uncertainty-Aware Indoor Localization for Safety-Critical Evacuation Systems
 
-## 🔥 Research Vision
-**"In emergency evacuation, inaccurate localization is more dangerous than delayed guidance."**
+## 🔥 Research Motivation
 
-Traditional indoor localization systems prioritize accuracy metrics (RMSE, precision) but often ignore a critical reality: **in safety-critical scenarios like fire evacuation, 'roughly right' can be more dangerous than 'completely unknown'.** This research rethinks localization from first principles, treating uncertainty not as noise to minimize, but as a fundamental design constraint for human safety.
+> **In safety-critical evacuation, inaccurate localization is more dangerous than delayed guidance.**
+
+Conventional indoor localization research focuses on minimizing geometric error (e.g., RMSE).
+However, in disaster scenarios such as fires, this assumption breaks down:
+
+* Localization errors are **systematic and structural**, not random
+* Environmental conditions change **dynamically and unpredictably**
+* Overconfident but incorrect localization leads to **dangerous evacuation decisions**
+
+This research redefines indoor localization as a **risk-aware decision-making problem under uncertainty**, where safety—not precision—is the primary objective.
+
+---
 
 ## 🎯 Core Research Question
-**How can we design evacuation systems that make safe decisions despite imperfect localization?**
 
-## 📌 Problem Statement
+**How can evacuation systems make safe and timely decisions when precise indoor localization is fundamentally unreliable?**
 
-### The Paradox of "Accurate Enough"
-Most indoor localization research assumes:
-1. Errors are Gaussian and independent
-2. More beacons = better accuracy
-3. Higher precision always improves outcomes
+---
 
-**Our discovery challenges all three assumptions:**
+## 🔑 Design Principles
 
-Through real-world BLE deployment in multi-story buildings, we observed:
-- **Structural Ambiguity**: Identical RSSI values correspond to different floors/staircases
-- **Non-Metric Relationships**: RSSI reflects environmental interaction, not Euclidean distance
-- **Failure Modes**: Human obstruction, multipath effects, and spatial layout create systematic (not random) errors
+This work is guided by four system-level objectives:
 
-### The Real-World Consequence
-During evacuation:
-- **Shortest-path routing** based on noisy location estimates → dangerous bottlenecks
-- **False confidence** in inaccurate positions → misdirection into hazards
-- **Uncertainty masking** → operators make decisions with unknown risk levels
+| Principle        | Description                                    |
+| ---------------- | ---------------------------------------------- |
+| **Safety**       | Minimize worst-case exposure to hazards        |
+| **Speed**        | Enable fast, computationally feasible guidance |
+| **Accuracy**     | Reliable decision-making under uncertainty     |
+| **Connectivity** | AI-driven automation and system integration    |
 
-## 💡 Research Contribution
+**Primary research focus:**
 
-### 1. Paradigm Shift: From "Points" to "Probabilities"
+* **Accuracy → Localization as a probabilistic and mathematical problem**
+* **Connectivity → AI-based automation and adaptive system design**
+
+---
+
+## 📌 Problem Analysis
+
+### 1. Manual Beacon Deployment Is Not Scalable
+
+Current BLE-based systems require **manual beacon placement** tailored to each building.
+Any structural change or environmental modification requires rebuilding the deployment map.
+
+**Limitation:**
+
+* High human labor cost
+* Low adaptability to new or damaged environments
+
+**Research Direction:**
+Formulate beacon placement as an **optimization problem** and design an **AI-assisted deployment system** that recommends beacon locations based on building topology and safety constraints.
+
+---
+
+### 2. Fundamental Limits of BLE RSSI
+
+BLE RSSI measurements:
+
+* Are **one-dimensional scalar observations**
+* Cannot distinguish vertical separation or obstruction-induced attenuation
+* Reflect environmental interaction rather than Euclidean distance
+
+This results in a **partially observable system**, where different physical states produce similar measurements.
+
+[
+z_t = h(x_t, e_t)
+]
+
+* (x_t): true user location
+* (e_t): latent environmental factors
+
+---
+
+### 3. Non-Stationary Disaster Environments
+
+Disaster conditions violate the stationarity assumptions of indoor localization:
+
+* Beacons may fail or be destroyed
+* Signal propagation changes due to fire, smoke, or collapse
+* Prior maps may become invalid
+
+Localization systems must therefore operate under **non-stationary and degraded conditions**.
+
+---
+
+## 💡 Core Concept: Decision-Critical Localization
+
+### Redefining Accuracy
+
+Instead of Euclidean error, localization accuracy is defined as:
+
+[
+\textbf{Decision Accuracy} = P(\text{Safe Decision} \mid b_t)
+]
+
+where (b_t = P(x_t)) is the belief over possible user locations.
+
+The system prioritizes **safe decisions with quantified confidence**, not precise coordinates.
+
+---
+
+## 🧠 AI-Driven Contributions
+
+### 1️⃣ AI-Based Beacon Placement Optimization
+
+Beacon deployment is modeled as an information-theoretic optimization problem:
+
+[
+\min_{\mathcal{B}} ; \mathbb{E}[H(P(X \mid \mathcal{B}))] + \lambda R(\mathcal{B})
+]
+
+* (H(\cdot)): localization uncertainty (entropy)
+* (\mathcal{B}): beacon configuration
+* (R(\mathcal{B})): robustness and redundancy term
+
+This enables **customized, safety-aware beacon layouts** without manual tuning.
+
+---
+
+### 2️⃣ Probabilistic Localization Under Partial Observability
+
+* Region-based localization instead of point estimates
+* Multi-hypothesis tracking
+* Confidence-aware sensor fusion (BLE + IMU + optional vision)
+
+The system maintains a **belief distribution** over possible user locations.
+
+---
+
+### 3️⃣ Adaptive Operation in Non-Stationary Environments
+
+* Online detection of sensor and beacon failures
+* Dynamic trust weighting of sensors
+* Graceful degradation under partial observability
+
+---
+
+## 🚦 Risk-Aware Evacuation Planning
+
+Evacuation guidance is generated in **belief space**, not physical space:
+
+[
+\pi^* = \arg\min_{\pi} \mathbb{E}[\text{Hazard Exposure} \mid b_t]
+]
+
+Routing decisions minimize **worst-case risk**, not shortest distance.
+
+---
+
+## 🧑‍🤝‍🧑 Human-Centered Safety Design
+
+The system explicitly supports **trust calibration**:
+
+* Communicates uncertainty transparently
+* Avoids overconfident instructions
+* Adapts instruction granularity as uncertainty increases
+
+---
+
+## 🏗️ System Architecture
+
 ```
-Traditional:      (x,y,z) ± ε
-Our approach:     P(location ∈ Zone) + Confidence Score + Risk Assessment
-```
-
-### 2. Safety-First Design Principles
-- **Conservative Guidance**: When uncertain, guide to nearest verifiable safe zone
-- **Risk-Aware Routing**: Evaluate paths by "worst-case exposure" not "shortest distance"
-- **Transparent Uncertainty**: Communicate confidence levels to both system and users
-
-### 3. System Architecture Innovation
-
-```
-[Multi-modal Sensors]
+[Multi-Modal Sensors]
+  └─ BLE / WiFi / IMU
         ↓
-[Uncertainty-Aware Fusion] → Confidence Score + Probability Distribution
+[Uncertainty-Aware Fusion Engine]
+  └─ Belief Distribution
+  └─ Confidence Estimation
         ↓
-[Risk-Weighted Path Planning] → Safety-Optimized Route
+[Risk-Aware Decision Core]
+  └─ Worst-case Risk Evaluation
         ↓
-[Adaptive Guidance] → Context-Aware Instructions
+[Adaptive Evacuation Guidance]
+  └─ Safety-first Instructions
 ```
 
-## 🔬 Technical Approach
+---
+
+## 🔬 Research Phases
 
 ### Phase 1: Uncertainty Characterization
-- **Empirical Analysis**: Real BLE data from multi-story buildings
-- **Error Taxonomy**: Categorize failure modes (structural vs. transient)
-- **Confidence Modeling**: Develop reliability metrics for RSSI measurements
 
-### Phase 2: Probabilistic Localization Framework
-- **Region-based Estimation**: Estimate occupancy probability in spatial zones
-- **Multi-Hypothesis Tracking**: Maintain multiple plausible location hypotheses
-- **Dynamic Confidence**: Adjust confidence based on environmental cues
+* Real-world BLE deployment
+* Structural vs. transient error analysis
+* RSSI reliability modeling
 
-### Phase 3: Safety-Optimized Decision Making
-- **Risk-Aware Path Planning**: Minimize "probability of hazard exposure"
-- **Conservative Fallbacks**: Default to safest (not fastest) options under uncertainty
-- **Human-System Communication**: Design intuitive uncertainty visualization
+### Phase 2: Probabilistic Localization
+
+* Bayesian / particle filtering
+* Zone-based estimation
+* Multi-hypothesis tracking
+
+### Phase 3: Safety-Optimized Evacuation
+
+* Belief-space routing
+* Conservative fallback strategies
+* User studies on uncertainty communication
+
+---
 
 ## 📊 Expected Contributions
 
 ### Theoretical
-1. **Formal Framework** for safety-critical localization under uncertainty
-2. **Risk-Quantification Metrics** beyond traditional accuracy measures
-3. **Human-Centric Evaluation** criteria for emergency guidance systems
+
+* Formal framework for safety-critical localization
+* Decision-oriented accuracy metrics
+* Beacon placement as an uncertainty minimization problem
 
 ### Practical
-1. **Open-Source Toolkit** for uncertainty-aware localization evaluation
-2. **Evacuation Simulation Platform** with configurable uncertainty models
-3. **Design Guidelines** for safety-critical IoT deployment
 
-## 🏗️ System Components
+* AI-assisted beacon deployment tool
+* Simulation platform with configurable uncertainty
+* Design guidelines for disaster-resilient indoor localization
 
-### 1. **Sensor Layer**
-- BLE/WiFi for coarse regional awareness
-- IMU for short-term motion tracking
-- Optional: Camera/Depth for verification
+---
 
-### 2. **Fusion Engine**
-- Probabilistic sensor fusion (Bayesian/particle filters)
-- Confidence estimation per measurement
-- Dynamic reliability weighting
-
-### 3. **Decision Core**
-- Multi-objective optimization: Safety × Efficiency × Certainty
-- Real-time risk assessment
-- Adaptive strategy selection
-
-### 4. **Guidance Interface**
-- Graduated instructions (specific → general as uncertainty increases)
-- Uncertainty visualization
-- Fallback protocol activation
-
-## 🚧 Current Status
+## 🚧 Project Status
 
 ### ✅ Completed
-- Real-world BLE deployment revealing structural limitations
-- Literature review identifying research gap in safety-critical localization
-- Problem formulation and system architecture design
+
+* Real-world BLE deployment experiments
+* Identification of structural localization failures
+* System architecture design
 
 ### 🔄 In Progress
-- Simulation environment development (ROS/Gazebo)
-- Baseline uncertainty modeling from empirical data
-- Risk-aware path planning algorithm prototyping
 
-### 📅 Next Steps
-1. Implement a probabilistic fusion framework
-2. Develop an evacuation simulation with configurable uncertainty
-3. Conduct user studies on uncertainty communication
+* Simulation environment (ROS/Gazebo)
+* Probabilistic fusion framework
+* Risk-aware routing prototype
 
-## 🎓 Academic Positioning
+### 📅 Planned
 
-This research bridges:
-- **Robotics** (localization, planning)
-- **Human-Computer Interaction** (uncertainty communication)
-- **Safety-Critical Systems** (formal verification, fault tolerance)
-- **Disaster Response** (evacuation dynamics, risk assessment)
+* AI-based beacon placement algorithm
+* Real-time environmental adaptation
+* Human-in-the-loop evaluation
 
-## 📚 Related Work
+---
 
-Our approach differs from existing literature by:
-1. Treating **uncertainty as a first-class citizen** rather than noise
-2. Focusing on **safety outcomes** rather than accuracy metrics
-3. Considering **human factors** in system design from the start
+## 🤝 Collaboration
 
-## 🤝 Collaboration & Contribution
+This project welcomes collaboration in:
 
-This is an open research initiative. We welcome:
-- Code contributions to simulation or algorithms
-- Real-world deployment data from challenging environments
-- Interdisciplinary perspectives on safety-critical systems
+* Indoor localization
+* Robotics and AI
+* Safety-critical systems
+* Human-centered evacuation design
 
-## 📧 Contact & Discussion
+📧 **Contact**: [onnonsue@gmail.com](mailto:onnonsue@gmail.com)
+🐙 **GitHub Issues**: Technical discussion and contributions welcome
 
-For research collaboration, dataset sharing, or technical discussion:
-- GitHub Issues: For technical questions and bug reports
-- Email: onnonsue@gmail.com
+---
 
-*This research acknowledges that all real-world systems have limitations. Instead of hiding these limitations, we make them explicit, quantifiable, and central to our design decisions—because in emergencies, knowing what you don't know can save lives.*
+> *In emergency systems, safety does not come from certainty,
+> but from decisions that respect uncertainty.*
