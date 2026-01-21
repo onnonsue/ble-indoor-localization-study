@@ -1,0 +1,30 @@
+# Week 01 – Initial Observations on Beacon-based Localization in Fire Scenarios
+
+## 1. Initial Expectation
+I initially assumed that improving beacon placement density
+would directly improve localization accuracy,
+even in emergency or fire scenarios.
+
+## 2. Observation
+During preliminary thinking and review of prior BLE-based systems,
+I noticed that most localization methods assume:
+- stable signal propagation
+- static environments
+- intact infrastructure
+
+However, in fire or disaster scenarios:
+- Beacons may be damaged or blocked
+- RSSI values fluctuate abnormally due to smoke, heat, and human movement
+- The system still outputs a confident location estimate
+even when the signal quality is clearly degraded.
+
+## 3. Why This Matters
+In evacuation systems, a confidently wrong location estimate
+can guide users toward hazardous areas.
+This suggests that higher geometric accuracy alone
+does not guarantee safer evacuation decisions.
+
+## 4. Open Questions
+- How can a system detect when localization confidence should be reduced?
+- Is it safer to output a region or multiple hypotheses instead of a single point?
+- How should evacuation guidance change when localization uncertainty increases?
